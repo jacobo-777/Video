@@ -1,0 +1,104 @@
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <limits>
+
+using namespace std;
+
+//estructura del nodo
+struct Node {
+    int id;
+    int distance;
+    Node(int id, int distance) : id(id), distance(distance) {}
+};
+
+//funcion compare
+struct Compare {
+    bool operator()(const Node& a, const Node& b) {
+        return a.distance > b.distance;
+    }
+};
+//funcion dijkstra
+void dijkstra(vector<vector<pair<int, int>>>& graph, int source) {
+    int V = graph.size();
+    vector<int> dist(V, numeric_limits<int>::max());
+    dist[source] = 0;
+//cola prioridad
+    priority_queue<Node, vector<Node>, Compare> pq;
+    pq.push({source, 0});
+//bucle principal dijikstra
+    while (!pq.empty()) {
+        Node node = pq.top();
+        pq.pop();
+
+        int u = node.id;
+        if (dist[u] < node.distance) continue; 
+
+        for (auto& neighbor : graph[u]) {
+            int v = neighbor.first;
+            int weight = neighbor.second;
+            if (dist[u] != numeric_limits<int>::max() &&
+                dist[v] > dist[u] + weight) {
+                dist[v] = dist[u] + weight;
+                pq.push({v, dist[v]});
+            }
+        }
+    }
+    // Imprimir las distancias más cortaso
+    for (int i = 0; i < V; i++) {
+        cout << "Distancia desde " << source << " a " << i << ": " << dist[i] << endl;
+    }
+}
+
+void bellman_ford(vector<vector<pair<int, int>>>& graph, int source) {
+    int V = graph.size();
+    vector<int> dist(V, numeric_limits<int>::max());
+    dist[source] = 0;
+
+    for (int i = 0; i < V - 1; i++) {
+        for (int u = 0; u < V; u++) {
+            for (auto& neighbor : graph[u]) {
+                int v = neighbor.first;
+                int weight = neighbor.second;
+                if (dist[u] != numeric_limits<int>::max() &&
+                    dist[v] > dist[u] + weight) {
+                    dist[v] = dist[u] + weight;
+                }
+            }
+        }
+    }
+
+    // Detección de ciclos negativos
+    for (int u = 0; u < V; u++) {
+        for (auto& neighbor : graph[u]) {
+            int v = neighbor.first;
+            int weight = neighbor.second;
+            if (dist[u] != numeric_limits<int>::max() &&
+                dist[v] > dist[u] + weight) {
+                cout << "El grafo contiene un ciclo negativo" << endl;
+                return;
+            }
+        }
+    }
+
+    // Imprimir las distancias más cortas
+    for (int i = 0; i < V; i++) {
+        cout << "Distancia desde " << source << " a " << i << ": " << dist[i] << endl;
+    }
+}
+
+int main() {
+    // Crear un grafo
+    vector<vector<pair<int, int>>> graph = {
+        {{1, 4}, {2, 2}},
+        {{2, 3}},
+        {{3, 1}},
+        {}
+    };
+
+    int source = 0;
+    dijkstra(graph, source);
+    // bellman_ford(graph, source);  // Descomentar para ejecutar Bellman-Ford
+
+    return 0;
+}
